@@ -37,11 +37,13 @@ function calculateAvailabeTickets(capacity, ticketsSold) {
 
 async function getSingleMovie(index=0) {
     let ticketsSold;
+    let filmId;
     await fetch(`https://code-challenge-3-orpin.vercel.app/db/db.json`)
         .then(res => res.json())
         .then(res => {
             res = res.films[index]
             ticketsSold = res.tickets_sold;
+            filmId = res.id;
             const singleMovie = document.querySelector('.singleMovie');
             singleMovie.innerHTML = `
                 <h2 class="movieTittle">${res.title}</h2>
@@ -63,7 +65,7 @@ async function getSingleMovie(index=0) {
             const buyTicket = document.querySelector('button');
             console.log(buyTicket)
             const availableTickets = document.querySelector('.availableTickets span')
-            buyTicket.addEventListener('click', () => {
+            buyTicket.addEventListener('click', async () => {
                 console.log('clicked')
                 let number = parseInt(availableTickets.textContent)
                 if (number === 1) {
@@ -73,9 +75,27 @@ async function getSingleMovie(index=0) {
                 number-=1
                 availableTickets.textContent = number
         
-                
+                const patchData = {
+                    tickets_sold: ticketsSold + 1
+                };
+
+                const options = {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(patchData)
+                };
+
+                await fetch(`https://code-challenge-3-orpin.vercel.app/db/films/${filmId}`, options)
+                    .then(res => res.json())
+                    .then(res => {
+                        console.log(res);
+                    })
+                    .catch(err => console.log(err.message))
                        
             })
             
 
-        })}
+        })
+}
